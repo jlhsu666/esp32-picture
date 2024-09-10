@@ -1,3 +1,3 @@
 # esp32-picture
 
-Hello~ This is a test.
+An ESP32-CAM project that integrate Google Firebase and 32 CAM for user to take a picture and then upload firebase directly.
