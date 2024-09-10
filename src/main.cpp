@@ -6,6 +6,7 @@
 #include "soc/soc.h" //disable brownout problems
 #include "soc/rtc_cntl_reg.h"  //disable brownout problems
 #include <LittleFS.h>
+#include <FS.h>
 #include <Firebase_ESP_Client.h>
 
 #define API_KEY "AIzaSyBoYvKHYY3GpvE09JDuWTz5apTkRa7Sq2s"
@@ -39,6 +40,8 @@ boolean takeNewPhoto = true;
 FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig configF;
+
+bool taskCompleted = false;
 
 void capturePhotoSaveLittleFS(void)
 {
@@ -144,6 +147,31 @@ void initLittleFS()
   }
 }
 
+void fcsUploadCallback(FCS_UploadStatusInfo info)
+{
+  if(info.status == firebase_fcs_upload_status_init){
+    Serial.printf("Uploading file %s (%d) to %s\n", info.localFileName.c_str(), info.fileSize, info.remoteFileName.c_str());
+  }
+  else if (info.status == firebase_fcs_upload_status_upload){
+    Serial.printf("Uploaded %d%s, Elapsed time %d ms\n", (int)info.progress, "%", info.elapsedTime);
+  }
+  else if (info.status == firebase_fcs_upload_status_complete){
+    Serial.println("Upload Completed\n");
+    FileMetaInfo meta = fbdo.metaData();
+    Serial.printf("Name: %s\n", meta.name.c_str());
+    Serial.printf("Bucket: %s\n", meta.bucket.c_str());
+    Serial.printf("ContentType: %s\n", meta.contentType.c_str());
+    Serial.printf("Size: %d\n", (int)meta.size);
+    Serial.printf("Generation: %lu\n", meta.generation);
+    Serial.printf("Metageneration: %lu\n", meta.metageneration);
+    Serial.printf("Etag: %s\n", meta.etag.c_str());
+    Serial.printf("Tokens: %s\n", meta.downloadTokens.c_str());
+  }
+  else if (info.status == firebase_fcs_upload_status_error){
+    Serial.printf("Upload failed, %s\n", info.errorMsg.c_str());
+  }
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -167,4 +195,14 @@ void loop()
     capturePhotoSaveLittleFS();
   }
   takeNewPhoto = false;
+
+  if(Firebase.ready() && !taskCompleted){
+    taskCompleted = true;
+    Serial.print("Uploading picture...");
+
+    if(Firebase.Storage.upload(&fbdo, STORAGE_BUCKET_ID, FILE_PHOTO_PATH, mem_storage_type_flash, BUCKET_PHOTO, "image/jpeg", fcsUploadCallback ))
+    {
+      Serial.printf("Download URL: %s\n", fbdo.downloadURL().c_str());
+    }
+  }
 }
