@@ -9,15 +9,15 @@
 #include <FS.h>
 #include <Firebase_ESP_Client.h>
 
-#define API_KEY "AIzaSyBoYvKHYY3GpvE09JDuWTz5apTkRa7Sq2s"
+#define API_KEY "FireBase_Project_API_KEY"
 #define USER_EMAIL "srl@gapps.knu.edu.tw"
 #define USER_PASSWORD "12345678"
-#define STORAGE_BUCKET_ID "cam-firebase-snapshot.appspot.com"
+#define STORAGE_BUCKET_ID "Firebase_Bucket_ID "
 #define FILE_PHOTO_PATH "/photo.jpg"
 #define BUCKET_PHOTO "/data/photo.jpg"
 
-const char* ssid = "Ron";
-const char* password = "0963083131";
+const char* ssid = "YOUR_AP";
+const char* password = "YOUR_AP_PWD";
 
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
